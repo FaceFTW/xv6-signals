@@ -1,3 +1,4 @@
+#include "kernel/signal.h"
 // Saved registers for kernel context switches.
 struct context {
   uint64 ra;
@@ -80,7 +81,6 @@ struct trapframe {
 };
 
 enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
-enum sigtype {SIGKILL, SIGMATH, SIGCHLD, SIGUSR};
 
 
 // Per-process state
