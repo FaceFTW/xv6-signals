@@ -23,6 +23,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int sendsig(int, int);
+int setsig(int, void*);
+int sigret(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

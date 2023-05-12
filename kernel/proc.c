@@ -686,6 +686,19 @@ procdump(void)
 
 int
 sendsig(int sigtype, int receiver_pid) {
-  printf("sendsig called with %d, %d", sigtype, receiver_pid);
+  printf("sendsig called with %d, %d\n", sigtype, receiver_pid);
+  return 0;
+}
+
+
+int
+setsig(int sigtype, void* sighandler) {
+  printf("setsig called with %d, %x\n", sigtype, sighandler);
+  return 0;
+}
+
+int
+sigret(void) {
+  printf("sigret called\n");
   return 0;
 }

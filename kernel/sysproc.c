@@ -100,3 +100,18 @@ sys_sendsig(void){
 
 	return sendsig(signum, receiver_pid);
 }
+
+uint64 sys_setsig(void){
+	int signum;
+	uint64 handler;
+
+	argint(0, &signum);
+	argaddr(1, &handler);
+
+	return setsig(signum, (void*)handler);
+}
+
+uint64 sys_sigret(void){
+	sigret();
+	return 0;
+}
