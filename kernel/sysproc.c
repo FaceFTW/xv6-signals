@@ -89,3 +89,14 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_sendsig(void){
+	int signum;
+	int receiver_pid;
+
+	argint(0, &signum);
+	argint(1, &receiver_pid);
+
+	return sendsig(signum, receiver_pid);
+}

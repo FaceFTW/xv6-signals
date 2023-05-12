@@ -80,6 +80,8 @@ struct trapframe {
 };
 
 enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+enum sigtype {SIGKILL, SIGMATH, SIGCHLD, SIGUSR};
+
 
 // Per-process state
 struct proc {
@@ -104,4 +106,14 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+
+  struct trapframe *sig_trapframe;
+  void* sig_handler[4];
+
+};
+
+struct siginfo{
+	int sender_pid;
+	int recipient_pid;
+	enum sigtype type;
 };
