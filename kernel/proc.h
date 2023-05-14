@@ -1,3 +1,6 @@
+#ifndef _KERNEL_PROC_H
+#define _KERNEL_PROC_H
+
 #include "kernel/signal.h"
 // Saved registers for kernel context switches.
 struct context {
@@ -21,10 +24,10 @@ struct context {
 
 // Per-CPU state.
 struct cpu {
-  struct proc *proc;          // The process running on this cpu, or null.
-  struct context context;     // swtch() here to enter scheduler().
-  int noff;                   // Depth of push_off() nesting.
-  int intena;                 // Were interrupts enabled before push_off()?
+  struct proc *proc;      // The process running on this cpu, or null.
+  struct context context; // swtch() here to enter scheduler().
+  int noff;               // Depth of push_off() nesting.
+  int intena;             // Were interrupts enabled before push_off()?
 };
 
 extern struct cpu cpus[NCPU];
@@ -82,20 +85,19 @@ struct trapframe {
 
 enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
-
 // Per-process state
 struct proc {
   struct spinlock lock;
 
   // p->lock must be held when using these:
-  enum procstate state;        // Process state
-  void *chan;                  // If non-zero, sleeping on chan
-  int killed;                  // If non-zero, have been killed
-  int xstate;                  // Exit status to be returned to parent's wait
-  int pid;                     // Process ID
+  enum procstate state; // Process state
+  void *chan;           // If non-zero, sleeping on chan
+  int killed;           // If non-zero, have been killed
+  int xstate;           // Exit status to be returned to parent's wait
+  int pid;              // Process ID
 
   // wait_lock must be held when using this:
-  struct proc *parent;         // Parent process
+  struct proc *parent; // Parent process
 
   // these are private to the process, so p->lock need not be held.
   uint64 kstack;               // Virtual address of kernel stack
@@ -108,12 +110,13 @@ struct proc {
   char name[16];               // Process name (debugging)
 
   struct trapframe *sig_trapframe;
-  void* sig_handler[4];
-
+  void *sig_handler[4];
 };
 
-struct siginfo{
-	int sender_pid;
-	int recipient_pid;
-	enum sigtype type;
+struct siginfo {
+  int sender_pid;
+  int recipient_pid;
+  enum sigtype type;
 };
+
+#endif
