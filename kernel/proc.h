@@ -109,7 +109,6 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  struct trapframe *sig_trapframe;
   void *sig_handler[4];
 };
 
@@ -117,6 +116,8 @@ struct siginfo {
   int sender_pid;
   int recipient_pid;
   enum sigtype type;
+
+  struct trapframe *sig_trapframe;
 };
 
 #endif

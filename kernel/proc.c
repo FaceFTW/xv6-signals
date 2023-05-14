@@ -627,6 +627,8 @@ int sendsig(int sigtype, int receiver_pid) {
   siginfo.recipient_pid = receiver_pid;
   siginfo.sender_pid = myproc()->pid;
 
+  memcpy(siginfo.sig_trapframe, myproc()->trapframe, sizeof(struct trapframe));
+
   if (siginfo.type == SIGKILL) {
     kill(receiver_pid);
     return 0;
@@ -678,5 +680,17 @@ int setsig(int sigtype, void *sighandler) {
 
 int sigret(void) {
   printf("sigret called\n");
+  memcpy(myproc()->trapframe, siginfo.sig_trapframe, sizeof(struct trapframe));
   return 0;
 }
+
+/*
+To jump to userspace:
+- Set trapframe epc
+- allocate stack frame and set it in trapframe
+- return
+
+sigret:
+- copy trapframe to user stack
+- return
+*/
