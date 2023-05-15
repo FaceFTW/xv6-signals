@@ -19,6 +19,7 @@ struct spinlock pid_lock;
 
 extern void forkret(void);
 static void freeproc(struct proc *p);
+void dummy_handler() { return; };
 
 extern char trampoline[]; // trampoline.S
 
@@ -53,6 +54,10 @@ void procinit(void) {
     initlock(&p->lock, "proc");
     p->state = UNUSED;
     p->kstack = KSTACK((int)(p - proc));
+    for (int i = 0; i < 4; i++) {
+    //   printf("reiniting sig_handler table\n");
+      p->sig_handler[i] = dummy_handler;
+    }
   }
 }
 
@@ -597,6 +602,83 @@ int either_copyin(void *dst, int user_src, uint64 src, uint64 len) {
   }
 }
 
+void backup_user_trapframe(struct trapframe *tf) {
+  //   siginfo.sig_trapframe->kernel_satp = tf->kernel_satp;
+  //   siginfo.sig_trapframe->kernel_sp = tf->kernel_sp;
+  //   siginfo.sig_trapframe->kernel_trap = tf->kernel_trap;
+  //   siginfo.sig_trapframe->epc = tf->epc;
+  //   siginfo.sig_trapframe->kernel_hartid = tf->kernel_hartid;
+  //   siginfo.sig_trapframe->ra = tf->ra;
+  //   siginfo.sig_trapframe->sp = tf->sp;
+  //   siginfo.sig_trapframe->gp = tf->gp;
+  //   siginfo.sig_trapframe->tp = tf->tp;
+  //   siginfo.sig_trapframe->t0 = tf->t0;
+  //   siginfo.sig_trapframe->t1 = tf->t1;
+  //   siginfo.sig_trapframe->t2 = tf->t2;
+  //   siginfo.sig_trapframe->s0 = tf->s0;
+  //   siginfo.sig_trapframe->s1 = tf->s1;
+  //   siginfo.sig_trapframe->a0 = tf->a0;
+  //   siginfo.sig_trapframe->a1 = tf->a1;
+  //   siginfo.sig_trapframe->a2 = tf->a2;
+  //   siginfo.sig_trapframe->a3 = tf->a3;
+  //   siginfo.sig_trapframe->a4 = tf->a4;
+  //   siginfo.sig_trapframe->a5 = tf->a5;
+  //   siginfo.sig_trapframe->a6 = tf->a6;
+  //   siginfo.sig_trapframe->a7 = tf->a7;
+  //   siginfo.sig_trapframe->s2 = tf->s2;
+  //   siginfo.sig_trapframe->s3 = tf->s3;
+  //   siginfo.sig_trapframe->s4 = tf->s4;
+  //   siginfo.sig_trapframe->s5 = tf->s5;
+  //   siginfo.sig_trapframe->s6 = tf->s6;
+  //   siginfo.sig_trapframe->s7 = tf->s7;
+  //   siginfo.sig_trapframe->s8 = tf->s8;
+  //   siginfo.sig_trapframe->s9 = tf->s9;
+  //   siginfo.sig_trapframe->s10 = tf->s10;
+  //   siginfo.sig_trapframe->s11 = tf->s11;
+  //   siginfo.sig_trapframe->t3 = tf->t3;
+  //   siginfo.sig_trapframe->t4 = tf->t4;
+  //   siginfo.sig_trapframe->t5 = tf->t5;
+  //   siginfo.sig_trapframe->t6 = tf->t6;
+}
+
+void restore_user_trapframe(struct trapframe *tf) {
+  //   tf->kernel_satp = siginfo.sig_trapframe->kernel_satp;
+  //   tf->kernel_sp = siginfo.sig_trapframe->kernel_sp;
+  //   tf->kernel_trap = siginfo.sig_trapframe->kernel_trap;
+  //   tf->epc = siginfo.sig_trapframe->epc;
+  //   tf->kernel_hartid = siginfo.sig_trapframe->kernel_hartid;
+  //   tf->ra = siginfo.sig_trapframe->ra;
+  //   tf->sp = siginfo.sig_trapframe->sp;
+  //   tf->gp = siginfo.sig_trapframe->gp;
+  //   tf->tp = siginfo.sig_trapframe->tp;
+  //   tf->t0 = siginfo.sig_trapframe->t0;
+  //   tf->t1 = siginfo.sig_trapframe->t1;
+  //   tf->t2 = siginfo.sig_trapframe->t2;
+  //   tf->s0 = siginfo.sig_trapframe->s0;
+  //   tf->s1 = siginfo.sig_trapframe->s1;
+  //   tf->a0 = siginfo.sig_trapframe->a0;
+  //   tf->a1 = siginfo.sig_trapframe->a1;
+  //   tf->a2 = siginfo.sig_trapframe->a2;
+  //   tf->a3 = siginfo.sig_trapframe->a3;
+  //   tf->a4 = siginfo.sig_trapframe->a4;
+  //   tf->a5 = siginfo.sig_trapframe->a5;
+  //   tf->a6 = siginfo.sig_trapframe->a6;
+  //   tf->a7 = siginfo.sig_trapframe->a7;
+  //   tf->s2 = siginfo.sig_trapframe->s2;
+  //   tf->s3 = siginfo.sig_trapframe->s3;
+  //   tf->s4 = siginfo.sig_trapframe->s4;
+  //   tf->s5 = siginfo.sig_trapframe->s5;
+  //   tf->s6 = siginfo.sig_trapframe->s6;
+  //   tf->s7 = siginfo.sig_trapframe->s7;
+  //   tf->s8 = siginfo.sig_trapframe->s8;
+  //   tf->s9 = siginfo.sig_trapframe->s9;
+  //   tf->s10 = siginfo.sig_trapframe->s10;
+  //   tf->s11 = siginfo.sig_trapframe->s11;
+  //   tf->t3 = siginfo.sig_trapframe->t3;
+  //   tf->t4 = siginfo.sig_trapframe->t4;
+  //   tf->t5 = siginfo.sig_trapframe->t5;
+  //   tf->t6 = siginfo.sig_trapframe->t6;
+}
 // Print a process listing to console.  For debugging.
 // Runs when user types ^P on console.
 // No lock to avoid wedging a stuck machine further.
@@ -623,19 +705,30 @@ void procdump(void) {
 int sendsig(int sigtype, int receiver_pid) {
   printf("sendsig called with %d, %d\n", sigtype, receiver_pid);
 
+  //   struct proc *p = myproc();
+
   siginfo.type = sigtype;
   siginfo.recipient_pid = receiver_pid;
   siginfo.sender_pid = myproc()->pid;
 
-  memcpy(siginfo.sig_trapframe, myproc()->trapframe, sizeof(struct trapframe));
+  printf("sender: %d, receiver: %d\n", siginfo.sender_pid,
+        siginfo.recipient_pid);
 
+  backup_user_trapframe(myproc()->trapframe);
   if (siginfo.type == SIGKILL) {
     kill(receiver_pid);
     return 0;
   }
 
   if (siginfo.type == SIGMATH) {
-    if (proc[receiver_pid].sig_handler[SIGMATH]) {
+    printf("sig handler: %p\n", proc[receiver_pid].sig_handler[SIGMATH]);
+    printf("dummy = %p\n", dummy_handler);
+    if ((uint64)proc[receiver_pid].sig_handler[SIGMATH] !=
+        (uint64)dummy_handler) {
+      //   p->trapframe->epc = (uint64)proc[receiver_pid].sig_handler[SIGMATH];
+
+      printf("SIGMATH received - custom\n");
+      return 0;
       // userspace handler
     } else {
       printf("SIGMATH received\n");
@@ -670,9 +763,12 @@ int sendsig(int sigtype, int receiver_pid) {
   return 0;
 }
 
-int setsig(int sigtype, void *sighandler) {
-  printf("setsig called with %d, %x\n", sigtype, sighandler);
+int setsig(int sigtype, void (*sighandler)()) {
+  printf("setsig called with %d, %p\n", sigtype, sighandler);
+  printf("proc %d sig table: %p\n", myproc()->pid,
+         myproc()->sig_handler[sigtype]);
   myproc()->sig_handler[sigtype] = sighandler;
+  printf("proc sig table: %p\n", myproc()->sig_handler[sigtype]);
 
   printf("");
   return 0;
@@ -680,7 +776,7 @@ int setsig(int sigtype, void *sighandler) {
 
 int sigret(void) {
   printf("sigret called\n");
-  memcpy(myproc()->trapframe, siginfo.sig_trapframe, sizeof(struct trapframe));
+  restore_user_trapframe(myproc()->trapframe);
   return 0;
 }
 

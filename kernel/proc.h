@@ -109,7 +109,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 
-  void *sig_handler[4];
+  void (*sig_handler[4])();
 };
 
 struct siginfo {

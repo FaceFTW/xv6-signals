@@ -87,7 +87,7 @@ uint64 sys_setsig(void) {
   argint(0, &signum);
   argaddr(1, &handler);
 
-  return setsig(signum, (void *)handler);
+  return setsig(signum, (void(*)()) handler);
 }
 
 uint64 sys_sigret(void) {
