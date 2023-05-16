@@ -117,7 +117,7 @@ struct siginfo {
   int recipient_pid;
   enum sigtype type;
 
-  struct trapframe *sig_trapframe;
+  struct trapframe sig_trapframe;
 };
 
 #endif

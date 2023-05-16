@@ -11,28 +11,22 @@ void example_handler() {
 
 int main(int argc, char *argv[]) {
   dummy_function();
-  //   void *p = malloc(100);
-
-  //   printf("handler addr: %p\n", example_handler);
-
   int pid = fork();
   if (pid == 0) {
-    setsig(SIGMATH, example_handler);
-	sleep(5);
+    setsig(SIGUSR, example_handler);
     setsig(SIGMATH, dummy_function);
     while (1) {
       sleep(1);
       printf("child is alive yaaay\n");
     };
   } else {
-    sleep(20);
+    sleep(10);
     sendsig(SIGMATH, pid);
+    sleep(5);
+    sendsig(SIGUSR, pid);
+    sleep(5);
+    kill(pid);
   }
 
-  //   sendsig(1, 2);
-  //   setsig(1, &p);
-  //   sigret();
-
-  //   free(p);
   exit(0);
 }
