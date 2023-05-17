@@ -628,8 +628,6 @@ void procdump(void) {
 int sendsig(int sigtype, int receiver_pid) {
   printf("sendsig called with %d, %d\n", sigtype, receiver_pid);
 
-  struct proc *p = myproc();
-
   siginfo.type = sigtype;
   siginfo.recipient_pid = receiver_pid;
   siginfo.sender_pid = myproc()->pid;
@@ -639,43 +637,55 @@ int sendsig(int sigtype, int receiver_pid) {
 
   memmove(&siginfo.sig_trapframe, myproc()->trapframe,
           sizeof(struct trapframe));
+
   if (siginfo.type == SIGKILL) {
     kill(receiver_pid);
     return 0;
   }
 
+  struct proc *p = 0;
+  for (int i = 0; i < NPROC; i++) {
+    if (proc[i].pid == receiver_pid) {
+      p = &proc[i];
+      break;
+    }
+  }
+
+  if (p == 0) {
+    panic("sendsig: no such process");
+    return -1;
+  }
+
   if (siginfo.type == SIGMATH) {
-    if (proc[receiver_pid].sig_handler[SIGMATH] == (void (*)()) - 1) {
+    if (p->sig_handler[SIGMATH] == (void (*)()) - 1) {
       printf("sigmath received\n");
       kill(receiver_pid);
       return 0;
     } else {
       printf("sigmath received - custom\n");
-      p->trapframe->epc = (uint64)proc[receiver_pid].sig_handler[SIGMATH];
+      myproc()->trapframe->epc = (uint64)p->sig_handler[SIGMATH];
       return 0;
     }
   }
 
   if (siginfo.type == SIGCHLD) {
-    if (proc[receiver_pid].sig_handler[SIGCHLD] == (void (*)()) - 1) {
+    if (p->sig_handler[SIGCHLD] == (void (*)()) - 1) {
       printf("sigchld received\n");
-      kill(receiver_pid);
       return 0;
     } else {
       printf("sigchld received - custom\n");
-      p->trapframe->epc = (uint64)proc[receiver_pid].sig_handler[SIGCHLD];
+      myproc()->trapframe->epc = (uint64)p->sig_handler[SIGCHLD];
       return 0;
     }
   }
 
   if (siginfo.type == SIGUSR) {
-    if (proc[receiver_pid].sig_handler[SIGUSR] == (void (*)()) - 1) {
+    if (p->sig_handler[SIGUSR] == (void (*)()) - 1) {
       printf("sigusr received\n");
-      kill(receiver_pid);
       return 0;
     } else {
       printf("sigusr received - custom\n");
-      p->trapframe->epc = (uint64)proc[receiver_pid].sig_handler[SIGUSR];
+      myproc()->trapframe->epc = (uint64)p->sig_handler[SIGUSR];
       return 0;
     }
   }
