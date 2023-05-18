@@ -626,14 +626,13 @@ void procdump(void) {
 }
 
 int sendsig(int sigtype, int receiver_pid) {
-  printf("sendsig called with %d, %d\n", sigtype, receiver_pid);
 
   siginfo.type = sigtype;
   siginfo.recipient_pid = receiver_pid;
   siginfo.sender_pid = myproc()->pid;
 
-  printf("sender: %d, receiver: %d\n", siginfo.sender_pid,
-         siginfo.recipient_pid);
+  printf("sendsig called from PID:%d with sigtype: %d, receiving_pid: %d\n",
+         siginfo.sender_pid, sigtype, receiver_pid);
 
   memmove(&siginfo.sig_trapframe, myproc()->trapframe,
           sizeof(struct trapframe));
@@ -658,11 +657,11 @@ int sendsig(int sigtype, int receiver_pid) {
 
   if (siginfo.type == SIGMATH) {
     if (p->sig_handler[SIGMATH] == (void (*)()) - 1) {
-      printf("sigmath received\n");
+      printf("SIGMATH received - killing process\n");
       kill(receiver_pid);
       return 0;
     } else {
-      printf("sigmath received - custom\n");
+      printf("SIGMATH received - using custom handler\n");
       myproc()->trapframe->epc = (uint64)p->sig_handler[SIGMATH];
       return 0;
     }
@@ -670,10 +669,10 @@ int sendsig(int sigtype, int receiver_pid) {
 
   if (siginfo.type == SIGCHLD) {
     if (p->sig_handler[SIGCHLD] == (void (*)()) - 1) {
-      printf("sigchld received\n");
+      printf("SIGCHLD received - ignoring\n");
       return 0;
     } else {
-      printf("sigchld received - custom\n");
+      printf("SIGCHLD received - using custom handler\n");
       myproc()->trapframe->epc = (uint64)p->sig_handler[SIGCHLD];
       return 0;
     }
@@ -681,10 +680,10 @@ int sendsig(int sigtype, int receiver_pid) {
 
   if (siginfo.type == SIGUSR) {
     if (p->sig_handler[SIGUSR] == (void (*)()) - 1) {
-      printf("sigusr received\n");
+      printf("SIGUSR received - ignoring\n");
       return 0;
     } else {
-      printf("sigusr received - custom\n");
+      printf("SIGUSR received - using custom handler\n");
       myproc()->trapframe->epc = (uint64)p->sig_handler[SIGUSR];
       return 0;
     }
@@ -695,7 +694,8 @@ int sendsig(int sigtype, int receiver_pid) {
 }
 
 int setsig(int sigtype, void (*sighandler)()) {
-  printf("setsig called with %d, %p\n", sigtype, sighandler);
+  printf("setsig called with sigtype: %d, sighandler: %p\n", sigtype,
+         sighandler);
   myproc()->sig_handler[sigtype] = sighandler;
 
   return 0;
@@ -706,14 +706,3 @@ int sigret(void) {
   memmove(proc->trapframe, &siginfo.sig_trapframe, sizeof(struct trapframe));
   return 0;
 }
-
-/*
-To jump to userspace:
-- Set trapframe epc
-- allocate stack frame and set it in trapframe
-- return
-
-sigret:
-- copy trapframe to user stack
-- return
-*/
